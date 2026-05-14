@@ -9,4 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "tsx prisma/seed.ts",
   },
+  datasource: {
+    url: process.env.DATABASE_URL ?? "",
+    /** Si no existe DIRECT_URL (p. ej. solo variable en Vercel), Prisma CLI usa la misma que DATABASE_URL. */
+    directUrl: process.env.DIRECT_URL || process.env.DATABASE_URL || "",
+  },
 });

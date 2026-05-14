@@ -57,7 +57,8 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
    | Variable | Valor |
    |----------|--------|
-   | `DATABASE_URL` | Cadena **PostgreSQL** (Neon, Supabase, Vercel Postgres, etc.). **No uses SQLite en Vercel.** |
+   | `DATABASE_URL` | **Transaction pooler** Supabase (`…pooler.supabase.com:6543/...`) con `?pgbouncer=true&sslmode=require`. |
+   | `DIRECT_URL` | (Opcional) Session pooler `…:5432` o directa. Si **no** existe, el build usa la misma URL que `DATABASE_URL` (ver `prisma.config.ts`). Conviene definirla si `DATABASE_URL` es solo pooler **:6543**. |
    | `AUTH_SECRET` | Secreto largo aleatorio. |
    | `NEXTAUTH_SECRET` | Puede ser el mismo que `AUTH_SECRET`. |
    | `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` (sin barra final). |
@@ -77,9 +78,8 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
 ### Si el build falla al aplicar el esquema (`db push`)
 
-- Usa en Vercel la misma `DATABASE_URL` **directa** de Supabase (host `db.….supabase.co`, puerto **5432**, con `?sslmode=require` si aplica). El pooler en **6543** suele dar errores con Prisma en build.
-- Comprueba que no haya espacios ni saltos de línea pegados al copiar la variable en Vercel.
-- En local puedes probar: `npx prisma db push` con esa misma URL; si falla ahí, el log te dirá el motivo (auth, red, SSL).
+- Con **Transaction pooler** (`:6543`) define también **`DIRECT_URL`** con el session pooler (`:5432`) o la URL directa. Si no la pones, el proyecto usa la misma cadena que `DATABASE_URL` solo para no romper el build; con `:6543` a veces `db push` sigue fallando hasta que agregues `DIRECT_URL`.
+- En `DATABASE_URL` con pooler transaccional incluye **`?pgbouncer=true`** (y `sslmode=require`).
 
 ### Qué no subas a Git
 
