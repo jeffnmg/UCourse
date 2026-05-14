@@ -75,6 +75,12 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
 6. La configuración de NextAuth incluye `trustHost: true` para que el dominio de Vercel funcione bien con el login.
 
+### Si el build falla en `prisma migrate deploy`
+
+- En **Supabase → Connect → ORMs**, usa la URL de **conexión directa** (host `db.PROJECT.supabase.co`, puerto **5432**), no la del *Transaction pooler* (puerto 6543): las migraciones no suelen funcionar contra el pooler en modo transacción.
+- La contraseña en la URL debe estar **codificada** si incluye `@`, `#`, etc. (o copia la cadena completa que muestra Supabase para Prisma).
+- Si ya habías creado tablas a mano en la misma base y hay conflicto, en el dashboard de Supabase puedes ejecutar SQL para vaciar el esquema y volver a desplegar, o crea un proyecto nuevo y una `DATABASE_URL` limpia.
+
 ### Qué no subas a Git
 
 El archivo **`.env`** con secretos reales no debe versionarse; en el repo va **`.env.example`**.
