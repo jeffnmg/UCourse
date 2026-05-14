@@ -20,7 +20,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:clean": "tsx prisma/clean-users-and-content.ts",
     "db:setup": "prisma db push && prisma db seed",
-    "vercel-build": "prisma generate && prisma db push --skip-generate && next build",
+    "vercel-build": "prisma generate && next build",
     "postinstall": "prisma generate"
   },
   "dependencies": {
