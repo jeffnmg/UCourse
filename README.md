@@ -57,8 +57,7 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
    | Variable | Valor |
    |----------|--------|
-   | `DATABASE_URL` | **Transaction pooler** Supabase (`…pooler.supabase.com:6543/...`) con `?pgbouncer=true&sslmode=require`. |
-   | `DIRECT_URL` | (Opcional) Session pooler `…:5432` o directa. Si **no** existe, el build usa la misma URL que `DATABASE_URL` (ver `prisma.config.ts`). Conviene definirla si `DATABASE_URL` es solo pooler **:6543**. |
+   | `DATABASE_URL` | Cadena **PostgreSQL** en puerto **5432**: conexión **directa** `db.PROJECT.supabase.co` o **Session pooler** del dashboard de Supabase. Una sola URL; sin transaction pooler `:6543`. |
    | `AUTH_SECRET` | Secreto largo aleatorio. |
    | `NEXTAUTH_SECRET` | Puede ser el mismo que `AUTH_SECRET`. |
    | `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` (sin barra final). |
@@ -78,8 +77,8 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
 ### Si el build falla al aplicar el esquema (`db push`)
 
-- Con **Transaction pooler** (`:6543`) define también **`DIRECT_URL`** con el session pooler (`:5432`) o la URL directa. Si no la pones, el proyecto usa la misma cadena que `DATABASE_URL` solo para no romper el build; con `:6543` a veces `db push` sigue fallando hasta que agregues `DIRECT_URL`.
-- En `DATABASE_URL` con pooler transaccional incluye **`?pgbouncer=true`** (y `sslmode=require`).
+- Usa **`DATABASE_URL` en puerto 5432** (directa o session pooler). Si el build en Vercel da P1001 con el host `db.…`, prueba la URI **Session pooler** que muestra Supabase (también en 5432).
+- Quita en Vercel cualquier variable **`DIRECT_URL`** si la añadiste antes; ya no se usa.
 
 ### Qué no subas a Git
 
