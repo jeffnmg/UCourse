@@ -3,6 +3,31 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+/**
+ * Supabase: el pooler en :6543 es modo transaccional; `db push` / migraciones suelen colgarse ahí.
+ * El mismo host en :5432 es session pooler (válido para DDL). Si no defines DIRECT_URL, derivamos :5432.
+ */
+function resolveDirectUrl(): string {
+  const explicit = process.env.DIRECT_URL?.trim();
+  if (explicit) return explicit;
+
+  const conn = process.env.DATABASE_URL ?? "";
+  if (!conn) return "";
+
+  if (!conn.includes(":6543")) return conn;
+
+  const withPort = conn.replace(/:6543\//, ":5432/");
+  const qIndex = withPort.indexOf("?");
+  if (qIndex === -1) return withPort;
+
+  const base = withPort.slice(0, qIndex);
+  const query = withPort.slice(qIndex + 1);
+  const params = new URLSearchParams(query);
+  params.delete("pgbouncer");
+  const rest = params.toString();
+  return rest ? `${base}?${rest}` : base;
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -11,7 +36,6 @@ export default defineConfig({
   },
   datasource: {
     url: process.env.DATABASE_URL ?? "",
-    /** Si no existe DIRECT_URL (p. ej. solo variable en Vercel), Prisma CLI usa la misma que DATABASE_URL. */
-    directUrl: process.env.DIRECT_URL || process.env.DATABASE_URL || "",
+    directUrl: resolveDirectUrl(),
   },
 });
