@@ -65,7 +65,7 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
    Opcionales: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, Upstash, etc.
 
-4. **Deploy.** `vercel.json` define el build: `prisma migrate deploy && next build`, así que las tablas se crean en Postgres en el primer despliegue.
+4. **Deploy.** `vercel.json` ejecuta `prisma generate`, luego `prisma db push` (ajusta las tablas al esquema sin depender del historial de migraciones en el servidor) y `next build`. Así evitamos fallos típicos de `migrate deploy` con Supabase/Vercel.
 
 5. **Seed (categorías y logros):** tras el primer deploy, ejecuta en tu máquina (con `DATABASE_URL` de producción apuntando a esa base):
 
@@ -75,11 +75,11 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 
 6. La configuración de NextAuth incluye `trustHost: true` para que el dominio de Vercel funcione bien con el login.
 
-### Si el build falla en `prisma migrate deploy`
+### Si el build falla al aplicar el esquema (`db push`)
 
-- En **Supabase → Connect → ORMs**, usa la URL de **conexión directa** (host `db.PROJECT.supabase.co`, puerto **5432**), no la del *Transaction pooler* (puerto 6543): las migraciones no suelen funcionar contra el pooler en modo transacción.
-- La contraseña en la URL debe estar **codificada** si incluye `@`, `#`, etc. (o copia la cadena completa que muestra Supabase para Prisma).
-- Si ya habías creado tablas a mano en la misma base y hay conflicto, en el dashboard de Supabase puedes ejecutar SQL para vaciar el esquema y volver a desplegar, o crea un proyecto nuevo y una `DATABASE_URL` limpia.
+- Usa en Vercel la misma `DATABASE_URL` **directa** de Supabase (host `db.….supabase.co`, puerto **5432**, con `?sslmode=require` si aplica). El pooler en **6543** suele dar errores con Prisma en build.
+- Comprueba que no haya espacios ni saltos de línea pegados al copiar la variable en Vercel.
+- En local puedes probar: `npx prisma db push` con esa misma URL; si falla ahí, el log te dirá el motivo (auth, red, SSL).
 
 ### Qué no subas a Git
 
