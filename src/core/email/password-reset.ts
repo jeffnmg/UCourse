@@ -1,11 +1,13 @@
-import { resend, FROM_EMAIL } from "./index";
+import { Resend } from "resend";
+import { FROM_EMAIL } from "./index";
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  const { RESEND_API_KEY } = process.env;
-  if (!RESEND_API_KEY) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     throw new Error("RESEND_API_KEY not configured");
   }
 
+  const resend = new Resend(apiKey);
   await resend.emails.send({
     from: FROM_EMAIL,
     to: [to],
