@@ -3,11 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ─── ENUMS (SQLite usa String) ────────────────────────────────────────────────
+// ENUMS persistidos como String (igual que antes con SQLite)
 
 // Role: STUDENT | CREATOR | ADMIN
 // CourseLevel: BEGINNER | INTERMEDIATE | ADVANCED

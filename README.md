@@ -5,61 +5,85 @@ Plataforma de cursos y masterclass con lecciones en video, quizzes, progreso, ce
 ## Requisitos
 
 - **Node.js** 20 o superior  
-- **npm** (incluido con Node)
+- **npm**  
+- **PostgreSQL** (local con Docker, o una base gratis como [Neon](https://neon.tech))
 
-## Puesta en marcha (clonar y probar)
+## Puesta en marcha (local)
 
-1. **Clonar el repositorio**
+1. Clona el repo y entra en la carpeta.
 
-   ```bash
-   git clone <url-de-tu-repo>
-   cd virtual-university
-   ```
+2. Crea un proyecto en Neon (o levanta Postgres local) y copia la cadena de conexión.
 
-2. **Variables de entorno**
+3. Variables de entorno:
 
    ```bash
    cp .env.example .env
    ```
 
-   Edita `.env` y pon un valor real en `AUTH_SECRET` y `NEXTAUTH_SECRET` (pueden ser el mismo string largo y aleatorio). Por ejemplo, en terminal: `openssl rand -base64 32`. El resto del bloque mínimo puede quedarse como en el ejemplo si corres en `http://localhost:3000`.
+   En `.env` pon `DATABASE_URL` de Postgres y genera secretos (`openssl rand -base64 32`) en `AUTH_SECRET` y `NEXTAUTH_SECRET`.
 
-3. **Instalar dependencias y base de datos**
+4. Instala y aplica esquema + datos de ejemplo:
 
    ```bash
    npm install
    npm run db:setup
    ```
 
-   Esto crea el SQLite `prisma/dev.db`, aplica el esquema y carga categorías y logros de ejemplo (`prisma/seed.ts`).
-
-4. **Arrancar en desarrollo**
+5. Desarrollo:
 
    ```bash
    npm run dev
    ```
-
-   Abre [http://localhost:3000](http://localhost:3000). Regístrate, explora cursos y, si eres creador, usa **Studio** para publicar contenido.
 
 ### Comandos útiles
 
 | Comando | Descripción |
 | --------|-------------|
 | `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Compilación de producción |
-| `npm run db:studio` | Consola visual de Prisma |
-| `npm run db:seed` | Vuelve a ejecutar solo el seed |
-| `npm run db:clean -- --yes` | Borra usuarios y contenido ligado (irreversible) |
+| `npm run build` | Solo Next (sin migraciones). En Vercel el build usa `vercel.json`. |
+| `npm run db:studio` | Consola Prisma |
+| `npm run db:seed` | Ejecuta de nuevo el seed |
+| `npm run db:clean -- --yes` | Borra usuarios y contenido asociado |
 
-## Qué no subir a Git
+---
 
-El archivo **`.env`** con secretos reales debe quedarse solo en tu máquina. En el repo va **`.env.example`** como plantilla. Las bases `*.db` locales están en `.gitignore`.
+## Desplegar en Vercel
+
+1. Entra en [vercel.com](https://vercel.com), inicia sesión e **importa el proyecto** desde tu repo de GitHub.
+
+2. **Framework Preset:** Next.js (por defecto).
+
+3. **Variables de entorno** (al importar o en Settings → Environment Variables), como mínimo:
+
+   | Variable | Valor |
+   |----------|--------|
+   | `DATABASE_URL` | Cadena **PostgreSQL** (Neon, Supabase, Vercel Postgres, etc.). **No uses SQLite en Vercel.** |
+   | `AUTH_SECRET` | Secreto largo aleatorio. |
+   | `NEXTAUTH_SECRET` | Puede ser el mismo que `AUTH_SECRET`. |
+   | `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` (sin barra final). |
+   | `NEXT_PUBLIC_APP_URL` | Igual que `NEXTAUTH_URL`. |
+
+   Opcionales: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, Upstash, etc.
+
+4. **Deploy.** `vercel.json` define el build: `prisma migrate deploy && next build`, así que las tablas se crean en Postgres en el primer despliegue.
+
+5. **Seed (categorías y logros):** tras el primer deploy, ejecuta en tu máquina (con `DATABASE_URL` de producción apuntando a esa base):
+
+   ```bash
+   npm run db:seed
+   ```
+
+6. La configuración de NextAuth incluye `trustHost: true` para que el dominio de Vercel funcione bien con el login.
+
+### Qué no subas a Git
+
+El archivo **`.env`** con secretos reales no debe versionarse; en el repo va **`.env.example`**.
 
 ## Funciones opcionales con API keys
 
-- **Resend**: envío de correos (p. ej. olvidé mi contraseña). Sin clave, en desarrollo puedes ver el enlace de recuperación en la consola del servidor.
-- **Upstash Redis**: rate limiting; sin variables, la app usa un almacén en memoria adecuado para demos.
+- **Resend**: correo (p. ej. recuperar contraseña). Sin clave, en desarrollo el enlace puede verse en la consola del servidor.
+- **Upstash Redis**: rate limiting; sin variables, la app usa memoria en proceso.
 
 ## Licencia
 
-Según definas para la hackathon (p. ej. MIT o la que indique el evento).
+La que definas para la hackathon o el proyecto.
